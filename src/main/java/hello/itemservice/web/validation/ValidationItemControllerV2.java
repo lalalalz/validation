@@ -19,9 +19,9 @@ import java.util.Map;
 
 @Slf4j
 @Controller
-@RequestMapping("/validation/v1/items")
+@RequestMapping("/validation/v2/items")
 @RequiredArgsConstructor
-public class ValidationItemControllerV1 {
+public class ValidationItemControllerV2 {
 
     private final ItemRepository itemRepository;
 
@@ -45,7 +45,7 @@ public class ValidationItemControllerV1 {
         return "validation/v2/addForm";
     }
 
-    @PostMapping("/add")
+//    @PostMapping("/add")
     public String addItem(@ModelAttribute Item item,
                           Model model,
                           RedirectAttributes redirectAttributes) {
@@ -78,6 +78,48 @@ public class ValidationItemControllerV1 {
         // 4. 검증이 실패하면 다시 등록 폼으로 이동한다.
         if (!errors.isEmpty()) {
             model.addAttribute("errors", errors);
+            return "validation/v2/addForm";
+        }
+
+
+        // 5. 검증이 성공하면 상품 상세 조회 폼으로 이동한다.
+        Item savedItem = itemRepository.save(item);
+        redirectAttributes.addAttribute("itemId", savedItem.getId());
+        redirectAttributes.addAttribute("status", true);
+        return "redirect:/validation/v2/items/{itemId}";
+    }
+
+    @PostMapping("/add")
+    public String addItemV1(@ModelAttribute Item item,
+                          BindingResult bindingResult,
+                          RedirectAttributes redirectAttributes) {
+
+        // --- 필드 검증 ---
+        // 1. itemName이 공백인지 확인한다.
+        if (!StringUtils.hasText(item.getItemName())) {
+            bindingResult.addError(new FieldError("item", "itemName", item.getItemName(), false, null, null, "상품 이름은 필수 입니다."));
+        }
+
+        // 2. price와 quantity의 범위를 확인한다.
+        if (item.getPrice() == null || item.getPrice() < 1000 || item.getPrice() > 1000000) {
+            bindingResult.addError(new FieldError("item", "price", item.getPrice(), false, null, null, "가격은 1,000 ~ 1,000,000 까지 허용합니다."));
+        }
+
+        if (item.getQuantity() == null || item.getQuantity() > 9999) {
+            bindingResult.addError(new FieldError("item", "quantity", item.getQuantity(), false, null, null, "수량은 최대 9,999 까지 허용합니다."));
+        }
+
+        // 3. 조합 검증을 확인한다. (가격 * 수량 >= 10,000)
+        if (item.getPrice() != null && item.getQuantity() != null) {
+            int resultPrice = item.getPrice() * item.getQuantity();
+            if (resultPrice < 10000) {
+                bindingResult.addError(new ObjectError("item", null, null, "가격 * 수량의 합은 10,000원 이상이어야 합니다. 현재 값 = " + resultPrice));
+            }
+        }
+
+        // 4. 검증이 실패하면 다시 등록 폼으로 이동한다.
+        if (bindingResult.hasErrors()) {
+            log.info("BindingResult={}", bindingResult);
             return "validation/v2/addForm";
         }
 
