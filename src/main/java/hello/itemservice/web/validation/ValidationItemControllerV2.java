@@ -10,6 +10,8 @@ import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.ObjectError;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -24,6 +26,12 @@ import java.util.Map;
 public class ValidationItemControllerV2 {
 
     private final ItemRepository itemRepository;
+    private final ItemValidator itemValidator;
+
+    @InitBinder
+    public void init(WebDataBinder webDataBinder) {
+        webDataBinder.addValidators(itemValidator);
+    }
 
     @GetMapping
     public String items(Model model) {
@@ -257,7 +265,7 @@ public class ValidationItemControllerV2 {
 //        return "redirect:/validation/v2/items/{itemId}";
 //    }
 
-    @PostMapping("/add")
+//    @PostMapping("/add")
     public String addItemV4(@ModelAttribute Item item,
                             BindingResult bindingResult,
                             RedirectAttributes redirectAttributes) {
@@ -292,6 +300,45 @@ public class ValidationItemControllerV2 {
             return "validation/v2/addForm";
         }
 
+
+        // 5. 검증이 성공하면 상품 상세 조회 폼으로 이동한다.
+        Item savedItem = itemRepository.save(item);
+        redirectAttributes.addAttribute("itemId", savedItem.getId());
+        redirectAttributes.addAttribute("status", true);
+        return "redirect:/validation/v2/items/{itemId}";
+    }
+
+//    @PostMapping("/add")
+    public String addItemV5(@ModelAttribute Item item,
+                            BindingResult bindingResult,
+                            RedirectAttributes redirectAttributes) {
+
+        itemValidator.validate(item, bindingResult);
+
+        // 4. 검증이 실패하면 다시 등록 폼으로 이동한다.
+        if (bindingResult.hasErrors()) {
+            log.info("BindingResult={}", bindingResult);
+            return "validation/v2/addForm";
+        }
+
+
+        // 5. 검증이 성공하면 상품 상세 조회 폼으로 이동한다.
+        Item savedItem = itemRepository.save(item);
+        redirectAttributes.addAttribute("itemId", savedItem.getId());
+        redirectAttributes.addAttribute("status", true);
+        return "redirect:/validation/v2/items/{itemId}";
+    }
+
+    @PostMapping("/add")
+    public String addItemV6(@Validated @ModelAttribute Item item,  // 1, 2, 3 검증 로직이 처리된다.
+                            BindingResult bindingResult,
+                            RedirectAttributes redirectAttributes) {
+
+        // 4. 검증이 실패하면 다시 등록 폼으로 이동한다.
+        if (bindingResult.hasErrors()) {
+            log.info("BindingResult={}", bindingResult);
+            return "validation/v2/addForm";
+        }
 
         // 5. 검증이 성공하면 상품 상세 조회 폼으로 이동한다.
         Item savedItem = itemRepository.save(item);
