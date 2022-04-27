@@ -35,11 +35,8 @@
             <input type="text"
                    id="id"
                    th:field="*{id}"
-                   th:errorclass="field-error"
                    class="form-control"
                    readonly>
-            <div th:errors="*{id}" class="field-error">
-            </div>
         </div>
         <div>
             <label for="itemName" th:text="#{label.item.itemName}">상품명</label>
@@ -78,13 +75,11 @@
             <div class="col">
                 <button class="w-100 btn btn-secondary btn-lg"
                         onclick="location.href='item.html'"
-                        th:onclick="|location.href='@{/validation/v2/items/{itemId}(itemId=${item.id})}'|"
+                        th:onclick="|location.href='@{/validation/v3/items/{itemId}(itemId=${item.id})}'|"
                         type="button" th:text="#{button.cancel}">취소</button>
             </div>
         </div>
-
     </form>
-
 </div> <!-- /container -->
 </body>
 </html>

@@ -29,20 +29,20 @@ public class ValidationItemControllerV1 {
     public String items(Model model) {
         List<Item> items = itemRepository.findAll();
         model.addAttribute("items", items);
-        return "validation/v2/items";
+        return "validation/v1/items";
     }
 
     @GetMapping("/{itemId}")
     public String item(@PathVariable long itemId, Model model) {
         Item item = itemRepository.findById(itemId);
         model.addAttribute("item", item);
-        return "validation/v2/item";
+        return "validation/v1/item";
     }
 
     @GetMapping("/add")
     public String addForm(Model model) {
         model.addAttribute("item", new Item());
-        return "validation/v2/addForm";
+        return "validation/v1/addForm";
     }
 
     @PostMapping("/add")
@@ -78,7 +78,7 @@ public class ValidationItemControllerV1 {
         // 4. 검증이 실패하면 다시 등록 폼으로 이동한다.
         if (!errors.isEmpty()) {
             model.addAttribute("errors", errors);
-            return "validation/v2/addForm";
+            return "validation/v1/addForm";
         }
 
 
@@ -86,20 +86,20 @@ public class ValidationItemControllerV1 {
         Item savedItem = itemRepository.save(item);
         redirectAttributes.addAttribute("itemId", savedItem.getId());
         redirectAttributes.addAttribute("status", true);
-        return "redirect:/validation/v2/items/{itemId}";
+        return "redirect:/validation/v1/items/{itemId}";
     }
 
     @GetMapping("/{itemId}/edit")
     public String editForm(@PathVariable Long itemId, Model model) {
         Item item = itemRepository.findById(itemId);
         model.addAttribute("item", item);
-        return "validation/v2/editForm";
+        return "validation/v1/editForm";
     }
 
     @PostMapping("/{itemId}/edit")
     public String edit(@PathVariable Long itemId, @ModelAttribute Item item) {
         itemRepository.update(itemId, item);
-        return "redirect:/validation/v2/items/{itemId}";
+        return "redirect:/validation/v1/items/{itemId}";
     }
 }
 
