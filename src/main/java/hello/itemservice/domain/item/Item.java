@@ -19,7 +19,7 @@ public class Item {
 
     public Item() {
     }
-
+    // 테스트용입니다
     public Item(String itemName, Integer price, Integer quantity) {
         this.itemName = itemName;
         this.price = price;
